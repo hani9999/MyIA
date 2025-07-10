@@ -1,5 +1,5 @@
 {
-  "name": "giminai-docker",
+  "name": "giminai",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
