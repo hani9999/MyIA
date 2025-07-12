@@ -41,7 +41,7 @@ app.post("/ask", async (req, res) => {
   processQueue();
 });
 
-// ✅ تشغيل الخادم وإرسال سؤال مباشر بعد الإقلاع (بدون HTTP داخلي)
+// ✅ تشغيل الخادم وإرسال سؤال مباشر بعد الإقلاع
 app.listen(port, async () => {
   console.log(`✅ الخادم يعمل على http://localhost:${port}`);
 
