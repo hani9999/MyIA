@@ -1,87 +1,85 @@
-import puppeteer from "puppeteer";
-import dotenv from "dotenv";
-dotenv.config();
+const puppeteer = require("puppeteer-core");
 
-export default async function askGemini(question) {
-  console.log("🚀 بدء تشغيل Puppeteer...");
+let browser;
 
-  const browser = await puppeteer.launch({
-    headless: false, // لمتابعة التصرف أثناء التطوير
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+async function initializeBrowser() {
+  if (!browser) {
+    console.log("🚀 بدء تشغيل المتصفح...");
+    browser = await puppeteer.launch({
+      headless: false,
+      args: ["--no-sandbox"],
+      executablePath: "/usr/bin/chromium" // تأكد من المسار في Railway أو بيئتك
+    });
+  }
+  return browser;
+}
 
+async function askGemini(question) {
+  const browser = await initializeBrowser();
   const page = await browser.newPage();
 
+  console.log("🌐 الانتقال إلى Gemini...");
+  await page.setCookie(
+    {
+      name: "SAPISID",
+      value: "E4ZHqgEnNxmLbN6l/Apj1csRX4-Wo80KJM",
+      domain: ".google.com",
+      path: "/"
+    },
+    {
+      name: "SID",
+      value: "g.a000ywjcq5kOO45l5KnImc9v9gW5eGQfmODE-eRvJpmO1fB4RgzQtzH3jjw5ZE4iiUTgoAHQzAACgYKAesSARYSFQHGX2MiTOUHzAESatQQCCw2GN04qRoVAUF8yKr0c0GkVwjYz5MdBJ_AWV6R0076",
+      domain: ".google.com",
+      path: "/"
+    },
+    {
+      name: "__Secure-1PSID",
+      value: "g.a000ywjcq5kOO45l5KnImc9v9gW5eGQfmODE-eRvJpmO1fB4RgzQUOdYxyCYYi77Uo4uWAeZcQACgYKAdASARYSFQHGX2MivTcbQVJXp6W7UgP92WPn3BoVAUF8yKoEJZSEV271nTBEMhq0rtHg0076",
+      domain: ".google.com",
+      path: "/"
+    }
+  );
+
   try {
-    console.log("🔐 إعداد الكوكيز...");
+    await page.goto("https://gemini.google.com/app", { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    await page.setCookie(
-      {
-        name: "SAPISID",
-        value: process.env.SAPISID,
-        domain: ".google.com",
-        path: "/",
-        httpOnly: true,
-        secure: true,
-      },
-      {
-        name: "__Secure-1PSID",
-        value: process.env.SECURE_1PSID,
-        domain: ".google.com",
-        path: "/",
-        httpOnly: true,
-        secure: true,
-      }
-    );
+    console.log("🕵️‍♂️ انتظار مربع السؤال...");
+    await page.waitForSelector("div.ql-editor.textarea", { visible: true, timeout: 30000 });
 
-    console.log("🌐 فتح صفحة Gemini...");
-    await page.goto("https://gemini.google.com/app", {
-      waitUntil: "domcontentloaded",
-    });
-
-    console.log("⌛️ في انتظار مربع الكتابة...");
-    await page.waitForSelector("div.ql-editor.textarea", {
-      visible: true,
-      timeout: 30000,
-    });
-
-    console.log("✍️ كتابة السؤال...");
     await page.type("div.ql-editor.textarea", question);
 
-    console.log("📨 إرسال السؤال...");
-    await page.waitForSelector("button.send-button", { visible: true });
+    console.log("📤 إرسال السؤال...");
     await page.click("button.send-button");
 
-    console.log("⏳ في انتظار الرد...");
+    // انتظار الرد
     let lastReply = "";
+    let stableCount = 0;
     for (let i = 0; i < 30; i++) {
       const current = await page.evaluate(() => {
         const el = document.querySelector("div.markdown.markdown-main-panel");
         return el?.innerText?.trim() || "";
       });
 
-      if (current && current !== lastReply) {
-        lastReply = current;
+      if (current === lastReply) {
+        stableCount++;
       } else {
-        console.log(`⌛️ لا جديد... (${i})`);
+        stableCount = 0;
+        lastReply = current;
       }
 
-      await new Promise((res) => setTimeout(res, 1000));
+      if (stableCount >= 3 && lastReply.length > 20) break;
+      await new Promise(res => setTimeout(res, 1000));
     }
 
-    console.log("✅ الرد جاهز 🎉");
+    console.log("✅ تم الحصول على الرد.");
     return lastReply || "❌ لم يتم العثور على رد.";
-
   } catch (err) {
-    console.error("❌ حدث خطأ أثناء سؤال Gemini:", err.message);
-
-    // التقاط لقطة شاشة عند الفشل
-    await page.screenshot({ path: "error_screenshot.png" });
-    console.log("📸 تم حفظ لقطة شاشة عند الفشل: error_screenshot.png");
-
-    return "❌ خطأ: " + err.message;
+    console.error("❌ خطأ أثناء سؤال Gemini:", err);
+    await page.screenshot({ path: "error.png" });
+    return "❌ خطأ أثناء سؤال Gemini.";
   } finally {
-    console.log("🧹 إغلاق المتصفح...");
-    await browser.close();
+    await page.close();
   }
 }
+
+module.exports = askGemini;
