@@ -1,46 +1,7 @@
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 
-const cookies = [
-  {
-    name: "AEC",
-    value: "AVh_V2jqpHvjdbifLwLHSejVVy3yNiDUwEtMj1OR1gpe6KfRNEE3Bd4tVg",
-    domain: ".google.com",
-    path: "/",
-    httpOnly: true,
-    secure: true
-  },
-  {
-    name: "APISID",
-    value: "OVODRZ-BibfWRtSP/A1wlgHzPr1VL_xSIs",
-    domain: ".google.com",
-    path: "/",
-    secure: true
-  },
-  {
-    name: "SAPISID",
-    value: "E4ZHqgEnNxmLbN6l/Apj1csRX4-Wo80KJM",
-    domain: ".google.com",
-    path: "/",
-    secure: true
-  },
-  {
-    name: "SID",
-    value: "g.a000ywjcq5kOO45l5KnImc9v9gW5eGQfmODE-eRvJpmO1fB4RgzQtzH3jjw5ZE4iiUTgoAHQzAACgYKAesSARYSFQHGX2MiTOUHzAESatQQCCw2GN04qRoVAUF8yKr0c0GkVwjYz5MdBJ_AWV6R0076",
-    domain: ".google.com",
-    path: "/",
-    httpOnly: true,
-    secure: true
-  },
-  {
-    name: "__Secure-1PSID",
-    value: "g.a000ywjcq5kOO45l5KnImc9v9gW5eGQfmODE-eRvJpmO1fB4RgzQUOdYxyCYYi77Uo4uWAeZcQACgYKAdASARYSFQHGX2MivTcbQVJXp6W7UgP92WPn3BoVAUF8yKoEJZSEV271nTBEMhq0rtHg0076",
-    domain: ".google.com",
-    path: "/",
-    httpOnly: true,
-    secure: true
-  }
-];
+const cookies = [ /* ... نسخ الكوكيز تبعك كما هي هنا ... */ ];
 
 async function askGemini(question = "ما هي عاصمة الجزائر؟") {
   console.log("🔥 تم استدعاء askGemini()");
@@ -48,6 +9,7 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
 
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
     dumpio: true
   });
@@ -64,7 +26,6 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
       timeout: 60000
     });
 
-    // 🔍 حفظ الصفحة بعد التحميل لتحليلها لاحقاً
     await page.screenshot({ path: "page.png", fullPage: true });
     const html = await page.content();
     fs.writeFileSync("page.html", html);
@@ -111,8 +72,6 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
     return lastReply || "❌ لم يتم العثور على رد.";
   } catch (err) {
     console.error("❌ حدث خطأ أثناء الخطوات:", err);
-
-    // حفظ الصفحة عند الخطأ
     try {
       await page.screenshot({ path: "error.png", fullPage: true });
       const html = await page.content();
@@ -130,7 +89,3 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
 }
 
 module.exports = askGemini;
-
-if (require.main === module) {
-  askGemini();
-}
