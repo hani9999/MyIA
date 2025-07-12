@@ -1,3 +1,5 @@
+console.log("🔥 تم استدعاء askGemini()");
+
 const puppeteer = require("puppeteer");
 console.log("🔥 تم استدعاء askGemini()");
 
