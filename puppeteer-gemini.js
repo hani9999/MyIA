@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer");
+console.log("🔥 تم استدعاء askGemini()");
 
 // ✅ كوكيز الجلسة
 const cookies = [
