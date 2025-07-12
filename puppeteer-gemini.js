@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-// ✅ كوكيز الدخول إلى Gemini
+// ✅ كوكيز جلسة Gemini
 const cookies = [
   {
     name: "AEC",
@@ -92,7 +92,7 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
 
 module.exports = askGemini;
 
-// ⬇️ لتجربة فورية بدون API
+// ✅ تشغيل مباشر للتجريب في وضع CLI
 if (require.main === module) {
   askGemini();
 }
