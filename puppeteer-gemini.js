@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer");
 
-// ✅ كوكيز جلسة Gemini
+// ✅ كوكيز الجلسة
 const cookies = [
   {
     name: "AEC",
@@ -43,23 +43,32 @@ const cookies = [
 ];
 
 async function askGemini(question = "ما هي عاصمة الجزائر؟") {
+  console.log("🚀 إطلاق متصفح Puppeteer...");
   const browser = await puppeteer.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
 
   const page = await browser.newPage();
+
+  console.log("🧁 إعداد الكوكيز...");
   await page.setCookie(...cookies);
 
   try {
-    await page.goto("https://gemini.google.com/app", { waitUntil: "domcontentloaded" });
+    console.log("🌐 الذهاب إلى Gemini...");
+    await page.goto("https://gemini.google.com/app", { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    await page.waitForSelector("div.ql-editor.textarea", { visible: true });
+    console.log("⏳ في انتظار محرر الكتابة...");
+    await page.waitForSelector("div.ql-editor.textarea", { visible: true, timeout: 30000 });
+
+    console.log(`✍️ كتابة السؤال: "${question}"`);
     await page.type("div.ql-editor.textarea", question);
 
-    await page.waitForSelector("button.send-button", { visible: true });
+    console.log("📤 في انتظار زر الإرسال...");
+    await page.waitForSelector("button.send-button", { visible: true, timeout: 15000 });
     await page.click("button.send-button");
 
+    console.log("🕒 في انتظار الجواب من Gemini...");
     let lastReply = "";
     let stableCount = 0;
 
@@ -80,19 +89,19 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
       await new Promise(res => setTimeout(res, 1000));
     }
 
-    console.log("✅ الجواب:", lastReply);
+    console.log("✅ الجواب النهائي:", lastReply || "لا يوجد رد");
     return lastReply || "❌ لم يتم العثور على رد.";
   } catch (err) {
-    console.error("❌ خطأ أثناء المعالجة:", err);
+    console.error("❌ حدث خطأ أثناء الخطوات:", err);
     return "❌ خطأ في المعالجة.";
   } finally {
+    console.log("🧹 إغلاق المتصفح...");
     await browser.close();
   }
 }
 
 module.exports = askGemini;
 
-// ✅ تشغيل مباشر للتجريب في وضع CLI
 if (require.main === module) {
   askGemini();
 }
