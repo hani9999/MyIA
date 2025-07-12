@@ -2,7 +2,7 @@ const express = require("express");
 const askGemini = require("./puppeteer-gemini");
 
 const app = express();
-const port = 8080;
+const port = process.env.PORT || 8080;
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -41,7 +41,6 @@ app.post("/ask", async (req, res) => {
   processQueue();
 });
 
-// ✅ تشغيل الخادم وإرسال سؤال مباشر بعد الإقلاع
 app.listen(port, async () => {
   console.log(`✅ الخادم يعمل على http://localhost:${port}`);
 
