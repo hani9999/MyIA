@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer");
 
+// ✅ كوكيز الدخول إلى Gemini
 const cookies = [
   {
     name: "AEC",
@@ -43,7 +44,7 @@ const cookies = [
 
 async function askGemini(question = "ما هي عاصمة الجزائر؟") {
   const browser = await puppeteer.launch({
-    headless: true, // ✅ مهم جداً للعمل على Railway
+    headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
 
@@ -79,7 +80,7 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
       await new Promise(res => setTimeout(res, 1000));
     }
 
-    console.log("✅ الرد:", lastReply);
+    console.log("✅ الجواب:", lastReply);
     return lastReply || "❌ لم يتم العثور على رد.";
   } catch (err) {
     console.error("❌ خطأ أثناء المعالجة:", err);
@@ -91,7 +92,7 @@ async function askGemini(question = "ما هي عاصمة الجزائر؟") {
 
 module.exports = askGemini;
 
-// 🔽 هذا لتجريب الكود مباشرة عند تشغيله بدون واجهة
+// ⬇️ لتجربة فورية بدون API
 if (require.main === module) {
   askGemini();
 }
