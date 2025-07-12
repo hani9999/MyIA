@@ -1,6 +1,5 @@
 const express = require("express");
 const askGemini = require("./puppeteer-gemini");
-const axios = require("axios");
 
 const app = express();
 const port = 8080;
@@ -42,19 +41,15 @@ app.post("/ask", async (req, res) => {
   processQueue();
 });
 
-app.listen(port, () => {
+// ✅ تشغيل الخادم وإرسال سؤال مباشر بعد الإقلاع (بدون HTTP داخلي)
+app.listen(port, async () => {
   console.log(`✅ الخادم يعمل على http://localhost:${port}`);
 
-  // تجربة تلقائية بعد بدء التشغيل
-  setTimeout(async () => {
-    console.log("🚀 إرسال سؤال تجريبي...");
-    try {
-      const response = await axios.post(`http://localhost:${port}/ask`, {
-        question: "ما هي عاصمة الجزائر؟"
-      });
-      console.log("🎯 الجواب:", response.data.answer);
-    } catch (error) {
-      console.error("❌ فشل إرسال السؤال:", error.message);
-    }
-  }, 3000);
+  console.log("🚀 إرسال سؤال تجريبي مباشرة...");
+  try {
+    const answer = await askGemini("ما هي عاصمة الجزائر؟");
+    console.log("🎯 الجواب:", answer);
+  } catch (error) {
+    console.error("❌ فشل في الحصول على الجواب:", error.message);
+  }
 });
